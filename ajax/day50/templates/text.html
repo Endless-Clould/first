@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <title>Title</title>
+</head>
+<body>
+<h3>初体验</h3>
+<button class="a_btn">ajax提交</button>
+<h3 class="text3"></h3>
+<hr>
+<h3>计算实例</h3>
+{#{% csrf_token %}#}
+
+<input type="text" class="num1">+
+<input type="text" class="num2">=
+<input type="text" class="total">
+<button class="to_btn">计算</button>
+<span class="sp"></span>
+<br>
+<h3>上传数据</h3>
+{% csrf_token %}
+<button class="js_btn">json提交</button>
+
+<hr>
+<hr>
+
+<h3>表单上传文件</h3>
+<form action="{% url "uploadfile" %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="file_name">
+    <input type="submit">
+</form>
+<hr>
+
+
+<h3>基于AJAX上传文件</h3>
+<form action="">
+    <input type="file" class="file_name">
+    <input type="button" class="file_btn" value="ajax提交">
+</form>
+</body>
+<script>
+    $(".a_btn").click(function () {
+        $.ajax({
+                url: "{% url "text" %}",
+                type: "POST",
+                success: function (data) {
+                    $(".text3").html(data)
+                }
+
+            }
+        )
+    });
+    $(".to_btn").click(function () {
+        let num1 = $(".num1").val();
+        let num2 = $(".num2").val();
+        $.ajax({
+            url: {% url "total" %},
+            type: "POST",
+            data: {
+                num1: num1,
+                num2: num2,
+                csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val()
+
+            },
+            success: function (data) {
+                let ret = JSON.parse(data);
+                if (ret.status) {
+                    $(".total").val(ret.total)
+                } else {
+                    $(".sp").html(ret.msg);
+                    setTimeout(function () {
+                        $(".sp").html("")
+                    }, 1000)
+                }
+            }
+        })
+    })
+
+
+    //上传js数据
+    $(".js_btn").on("click", function () {
+        $.ajax(
+            {
+                url: "/json_upload/",
+                type: "POST",
+                contentType: "json",
+                headers: {"X-CSRFToken": $("[name='csrfmiddlewaretoken']").val()}, // 在请求头中添加csrf
+                data: JSON.stringify(
+                    {
+                        aaa: 111,
+                        bbb: 222,
+                        user: "alexsb",
+                        {#csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val()#}
+                    }
+                ),
+                success: function (data) {
+                    alert(data);
+                }
+
+            }
+        )
+    });
+
+
+    $(".file_btn").on("click", function () {
+        let formdata = new FormData();
+        formdata.append("csrfmiddlewaretoken", $("[name='csrfmiddlewaretoken']").val());
+        formdata.append("file_name", $(".file_name")[0].files[0]);
+        $.ajax(
+            {
+                url: "{% url "fileupload" %}",
+                type: "POST",
+                processData: false,
+                contentType:false,
+                data:formdata,
+                success:function (data) {
+                    alert("dadada")
+                }
+            }
+        )
+
+
+    })
+
+</script>
+</html>
+
+
+<hr>
+<hr>
+<hr>
+{% csrf_token %}
+<p><input type="text" class="user" placeholder="user"></p>
+<p><input type="text" class="pwd" placeholder="pwd"></p>
+<button class="aj_btn">测试提交</button>
+<script>
+    $(".aj_btn").on("click",function () {
+        let user =$(".user").val();
+        let pwd =$(".pwd").val();
+        $.ajax({
+            url :{% url "user" %},
+            type:"POST",
+                            headers: {"X-CSRFToken": $("[name='csrfmiddlewaretoken']").val()}, // 在请求头中添加csrf
+
+            data:JSON.stringify({
+                username :user,
+                password :pwd
+                }),
+            success:function f(data) {
+                alert(data)
+            }
+
+    })
+
+    })
+
+
+
+
+</script>
