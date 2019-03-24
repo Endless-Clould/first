@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <title>Title</title>
+</head>
+<body>
+
+
+<div class="col-sm-4">
+    {% csrf_token %}
+    {#                        <img src="/static/images/111.png" alt="">#}
+    <img class="img" src="/val_img/ " alt=""> {# 这行的/val_img/ 响应val_img 视图  获取内容#}
+</div>
+</body>
+</html>

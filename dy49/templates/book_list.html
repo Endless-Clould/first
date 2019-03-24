@@ -1,0 +1,219 @@
+{#<script src="https://cdn.bootcss.com/jquery/3.3.0/jquery.js"></script>#}
+
+
+{% extends 'pub_sta.html' %}
+{% block css %}
+    <style>
+        tbody td {
+            vertical-align: middle
+        }
+
+        .add_book {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 500px;
+            height: 400px;
+            background-color: #007aff;
+            z-index: 9999;
+            margin-top: -250px;
+            margin-left: -200px;
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            .add_book {
+                width: 400px;
+                hight: 300px;
+                margin-top: 200px;
+                margin-left: 150px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .add_book {
+                width: 300px;
+                hight: 200px;
+                margin-top: 150px;
+                margin-left: 100px;
+            }
+        }
+
+        @media (max-width: 544px) {
+            .add_book {
+                width: 200px;
+                hight: 100px;
+                margin-top: 100px;
+                margin-left: 50px;
+            }
+        }
+    </style>
+{% endblock css %}
+{% block title %}
+    <h3>书籍列表</h3>
+{% endblock %}
+{% block content %}
+    {{ block.super }}
+    <table class="table table-hover active success">
+        <thead>
+        <tr class="success">
+            <th>序号</th>
+            <th>id</th>
+            <th>书名</th>
+            <th>价格</th>
+            <th>出版社</th>
+            <th>作者</th>
+            <th>出版日期</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for book in books %}
+            <tr>
+                <td style="vertical-align: middle">{{ forloop.counter }}</td>
+                <td class="bk__id" style="vertical-align: middle">{{ book.pk }}</td>
+                <td class="title" style="vertical-align: middle">{{ book.title }}</td>
+                <td style="vertical-align: middle">{{ book.price }}</td>
+                <td style="vertical-align: middle">{{ book.publish.name }}</td>
+                <td style="vertical-align: middle">
+                    {% for au in book.authors.all %}
+                        {% if forloop.last %}
+                            {{ au.name }}
+                        {% else %}
+                            {{ au.name }} |
+                        {% endif %}
+                    {% endfor %}
+
+                </td>
+                <td style="vertical-align: middle">{{ book.pub_date|date:"Y-m-d" }}</td>
+                <td style="vertical-align: middle">
+                    <a href="{% url 'updatebook' book_id=book.pk %}" class="btn btn-primary btn-success active"
+                       role="button">编辑</a>
+                    <button class="bk_id" book_id={{ book.pk }}>删除</button>
+                    {#                <a href="{% url "delbook" book_id=book.pk  %}}" id="del" class="btn btn-primary btn-success active" role="button">删除</a>#}
+                    <span class="sp"></span>
+
+                </td>
+
+            </tr>
+
+            <div class="add_book" class="form-group">
+                <form class="form-horizontal" action="" method="post">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="inputEmail3" class=" control-label">书名</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="title"  class="form-control addtitle" id="inputEmail3" placeholder="请输入书名">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPassword3" class=" control-label">价格</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="price" class="form-control" id="inputPassword3"
+                                   placeholder="请输入价格">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputPassword5" class=" control-label">出版日期</label>
+                        <div class="col-sm-10">
+                            <input type="date" name="pub_date" class="form-control" id="inputPassword5"
+                                   placeholder="请输入出版日期">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPassword4" class="control-label">作者</label>
+                        <div class="col-sm-10">
+                            <select name="author" id="author" multiple class="form-control">
+                                {% for au in authors %}
+                                    <option value="{{ au.pk }}">{{ au.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPassword4" class=" control-label">出版社</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" id="publish" name="publish">
+                                {% for publish in publishs %}
+                                    <option value="{{ publish.pk }}">{{ publish.name }}</option>
+                                {% endfor %}
+
+                            </select>
+                        </div>
+                    </div>
+
+
+                </form>
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <button id="save_add" class="btn btn-default save_book">保存</button>
+                        </div>
+            </div>
+            </div>
+
+        {% endfor %}
+
+        </tbody>
+    </table>
+    {#    删除ajax#}
+    <script>
+        $(".bk_id").on("click", function () {
+            let book_id = $(this).attr("book_id");
+
+            let msg = $(this).parent().parent();
+
+            $.ajax({
+                url: '{% url "delbook1" %}',
+                headers: {"X-CSRFToken": $("[name='csrfmiddlewaretoken']").val()},
+                type: "POST",
+                data: {
+                    book_id: book_id
+                },
+                success: function (data) {
+
+                    if (data["static"]) {
+
+                        msg.html("<td><span>data['msg']</span></td>");
+
+                    }
+                }
+
+            })
+        })
+
+
+    </script>
+
+
+
+    {#   ajax 增加 #}
+
+
+    <script>
+        $("#identifier").on('click', function () {
+            $(".add_book").fadeIn(300);
+
+        })
+    </script>
+    <script>
+        $(".save_book").on('click', function () {
+
+            let addtitle =$(".addtitle");
+            $.ajax({
+                url:"/add_book2/",
+                type:"POST",
+                data:{
+                    title:addtitle
+                },
+                success:function f(data) {
+                    alert(data)
+                }
+            });
+
+             $(".add_book").fadeOut(600);
+        })
+    </script>
+
+{% endblock content %}
